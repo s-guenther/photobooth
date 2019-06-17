@@ -1,0 +1,3 @@
+#!/bin/bash
+
+feh -FYz --reload 40 --slideshow-delay 10 slideshow/
