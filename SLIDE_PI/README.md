@@ -25,8 +25,9 @@ Sending mails
 -------------
 
 - put ~/send_photos.py in /etc/rc.local autostart
-- fill in your server credentials in send_photos.py --> the global variables
-  USER, PASSWORD, IMAPSERVER, SMTPSERVER after the import statements
+- create a ./servercredentials file in HOME with the following information:
+  USER, PASSWORD, IMAPSERVER, SMTPSERVER, each in a new line (see
+  ./servercredentialsdummy file as example)
 
 
 Communication between raspberry pis

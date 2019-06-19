@@ -15,10 +15,8 @@ from email.mime.application import MIMEApplication
 from zipfile import ZipFile
 
 
-USER = 'user@mail.server'
-PASSWORD = 'MyTotallySecurePassword'
-IMAPSERVER = 'mail.server-imap.url:port'  # :993 Std Value
-SMTPSERVER = 'mail.server-smtp.url:port'  # :587 in my case
+with open('servercredentials', 'r') as ff:
+    USER, PASSWORD, IMAPSERVER, SMTPSERVER = ff.read().splitlines()
 
 
 def check_mails():
