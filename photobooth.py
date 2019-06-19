@@ -33,7 +33,7 @@ random.seed()
 # logo_splash.png
 # slideshowbar.png
 # background.jpg
-PATH = '/home/pi/event'
+PATH = '/home/pi/marlenebasti'
 
 # some global name tags - Set these to desired Values
 S_DATE = '22.06.2019'
@@ -238,18 +238,8 @@ PHOTOS = [None]*5  # Element 0: Assembly, Element 1-4: Photo 1-4
 # Static Image Objects
 BACKGROUND = pygame.image.load(os.path.join(PATH, 'background.jpg')).convert()
 
-LOGO = pygame.image.load(
-    os.path.join(PATH, 'logo_partykulaer.png')).convert_alpha()
-_IMGHEIGHT = 110
-LOGO = pygame.transform.scale(LOGO, (int(ceil(1089.0/278.0*_IMGHEIGHT)),
-                                     _IMGHEIGHT))
-
 SPLASH = pygame.image.load(
     os.path.join(PATH, 'logo_splash.png')).convert_alpha()
-_IMGHEIGHT = 200
-(_W, _H) = SPLASH.get_size()
-SPLASH = pygame.transform.scale(SPLASH, (int(ceil(_W*_IMGHEIGHT/_H)),
-                                         _IMGHEIGHT))
 
 CAM = PiCamera()
 CAM.resolution = (1920, 1080)
@@ -345,10 +335,8 @@ def assemble_pictures():
     # Logo version SCHWARZ
     logopath = os.path.join(PATH, 'logo_assembly.png')
     img = Image.open(logopath)
-    logo_size = (int(ceil(1089.0/278.0*outer_border)), outer_border)
-    img.thumbnail(logo_size)
-    offset = (1920 - logo_size[0], 1080 - logo_size[1])
-    output_image.paste(img, offset)
+    offset = (1920 - img.size[0], 1080 - img.size[1])
+    output_image.paste(img, offset, img)
 
     # Save assembled image
     output_filename = os.path.join(PICPATH, DIRNAME, 'assembly.jpg')
@@ -500,15 +488,9 @@ def slide_idle():
     STATE_LAST = STATE_IDLE
     make_dummy_screen([u'Du kannst auch mich drücken'],
                       ['Oder mich! Nimm mich!'],
-                      ['Willkommen in der',
-                       '                     PHOTO BOOTH',
-                       u'Drücke den roten Start Knopf um ...zu starten',
-                       '', '', '', '', '', ''])
-    # partykulaer logo within text body
-    SCREEN.blit(LOGO, (460, 70))  # see where to put
+                      [''])
     # splash logo, party/event name
-    (w, h) = SPLASH.get_size()
-    SCREEN.blit(SPLASH, (960-w/2, 385-h/2))  # see where to put
+    SCREEN.blit(SPLASH, (0, 10))  # see where to put
     put_text([u'Mich hat schon so lange niemand mehr gedrückt =('],
              1440, 1050, 40)
     if HIDDEN.isfinished():
