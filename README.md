@@ -48,10 +48,6 @@ Todos
 
 - Add comprehensive documentation
 - Move to python3 (yes, its still in python2.7)
-- Put a few pictures etc. into ram instead of loading them from filesystem every
-  single frame (!) (with the newly introduced background image, the raspberry pi
-  is at the limits of its capabilities + all this read access can't be good for
-  sd card lifetime)
 - Complete rewrite from "Fortran Style State Machine" to sane object oriented
   design
 

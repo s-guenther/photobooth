@@ -51,7 +51,25 @@ DISCARDPATH = '/home/pi/discard'
 S_WELCOMESCREEN = u'PARTYKULÄR PHOTO BOOTH'
 S_MAIL = u'insert.a@mail.adress'
 
-SlIDESHOWPICS = [None, None, None]
+# Dynamic Image Objects
+SLIDESHOW = [None]*3
+PHOTOS = [None]*5  # Element 0: Assembly, Element 1-4: Photo 1-4
+
+# Static Image Objects
+BACKGROUND = pygame.image.load(os.path.join(PATH, 'background.jpg')).convert()
+
+LOGO = pygame.image.load(
+    os.path.join(PATH, 'logo_partykulaer.png')).convert_alpha()
+_IMGHEIGHT = 110
+LOGO = pygame.transform.scale(LOGO, (int(ceil(1089.0/278.0*_IMGHEIGHT)),
+                                     _IMGHEIGHT))
+
+SPLASH = pygame.image.load(
+    os.path.join(PATH, 'logo_splash.png')).convert_alpha()
+_IMGHEIGHT = 200
+(_W, _H) = SPLASH.get_size()
+SPLASH = pygame.transform.scale(SPLASH, (int(ceil(_W*_IMGHEIGHT/_H)),
+                                         _IMGHEIGHT))
 
 
 # Define States globally
@@ -255,6 +273,12 @@ TRIGHT = (1435, 1000)
 TMID = (960, 450)
 
 
+def flip_image(filepath):
+    image_obj = Image.open(filepath)
+    rotated_image = image_obj.transpose(Image.FLIP_LEFT_RIGHT)
+    rotated_image.save(filepath)
+
+
 def take_picture(name):
     init_camtimer(4)
     CAM.start_preview()
@@ -267,18 +291,16 @@ def take_picture(name):
     flip_image(imgname)
     CAM.stop_preview()
 
-
-def flip_image(filepath):
-    image_obj = Image.open(filepath)
-    rotated_image = image_obj.transpose(Image.FLIP_LEFT_RIGHT)
-    rotated_image.save(filepath)
-
-
-def show_picture(name, size=(1280, 720), pos=(320, 140)):
-    img = pygame.image.load(os.path.join(PICPATH, DIRNAME, name + '.jpg'))
+def picture_to_globals(pos, name, size=(1280, 720)):
+    imgname = os.path.join(PICPATH, DIRNAME, name + '.jpg')
+    img = pygame.image.load(imgname)
     img = img.convert()
     img = pygame.transform.scale(img, size)
-    SCREEN.blit(img, pos)
+    PHOTOS[pos] = img
+
+
+def show_picture(ele, pos=(320, 140)):
+    SCREEN.blit(PHOTOS[ele], pos)
 
 
 def assemble_pictures():
@@ -411,6 +433,8 @@ def copy_to_remote():
 
 
 def put_text(texts, x, y, size=75, color=WHITE):
+    if isinstance(texts, str):
+        texts = [texts]
     nlines = len(texts)
     ypos = range(nlines)
     ytop = y - (nlines*size + (nlines - 1)*0.0*size)/2
@@ -431,51 +455,43 @@ def put_timeout():
 def make_dummy_screen(textleft, textright, textmain):
     SCREEN.fill(WHITE)
     # partyculaer logo within text body
-    bg = os.path.join(PATH, 'background.jpg')
-    img = pygame.image.load(bg)
-    img = img.convert()
-    SCREEN.blit(img, (0, 0))
+    SCREEN.blit(BACKGROUND, (0, 0))
     put_text(textleft, TLEFT[0], TLEFT[1], 75)
     put_text(textright, TRIGHT[0], TRIGHT[1], 75)
     put_text(textmain, TMID[0], TMID[1], 100)
 
 
+def list_abs_dir(directory):
+    # taken and modified from https://stackoverflow.com/questions/9816816
+    absfilepaths = list()
+    for dirpath, _, filenames in os.walk(directory):
+        for f in filenames:
+            absfilepaths.append(os.path.abspath(os.path.join(dirpath, f)))
+    return absfilepaths
+
+
 def choose_slideshow_photos():
     # choose 3 elements from slideshow folder
-    filelist = os.listdir(SLIDEPATH)
+    filelist = list_abs_dir(SLIDEPATH)
     # If there less than 3 elements, take slides from dummyslidepath
     if len(filelist) < 3:
-        dummyslides = os.listdir('dummyslideshow')
+        dummyslides = list_abs_dir('dummyslideshow')
         random.shuffle(dummyslides)
         filelist += dummyslides
         filelist = filelist[0:3]
     random.shuffle(filelist)
-    global SlIDESHOWPICS
-    SlIDESHOWPICS = filelist[0:3]
+    imglist = list()
+    for file in filelist:
+        img = pygame.image.load(file).convert()
+        imglist.append(pygame.transform.scale(img, (640, 360)))
+    global SLIDESHOW
+    SLIDESHOW = imglist
 
 
-# noinspection PyBroadException
 def make_slideshow():
-    images = list()
-    for pic in SlIDESHOWPICS:
-        try:
-            img = pygame.image.load(os.path.join(SLIDEPATH, pic))
-        except:
-            img = pygame.image.load(os.path.join('dummyslideshow', pic))
-        images.append(img)
-    img = images[0].convert()
-    img = pygame.transform.scale(img, (640, 360))
-    SCREEN.blit(img, (0, 500))
-    img = images[1].convert()
-    img = pygame.transform.scale(img, (640, 360))
-    SCREEN.blit(img, (640, 500))
-    img = images[2].convert()
-    img = pygame.transform.scale(img, (640, 360))
-    SCREEN.blit(img, (1280, 500))
-    img = pygame.image.load(os.path.join(PATH, 'slideshowbar.png'))
-    img = img.convert()
-    SCREEN.blit(img, (0, 480))
-    SCREEN.blit(img, (0, 500+360))
+    SCREEN.blit(SLIDESHOW[0], (0, 500))
+    SCREEN.blit(SLIDESHOW[1], (640, 500))
+    SCREEN.blit(SLIDESHOW[2], (1280, 500))
 
 
 # Define Slides
@@ -489,24 +505,10 @@ def slide_idle():
                        '                     PHOTO BOOTH',
                        u'Drücke den roten Start Knopf um ...zu starten',
                        '', '', '', '', '', ''])
-    # partyculaer logo within text body
-    logoname = os.path.join(PATH, 'logo_partykulaer.png')
-    img = pygame.image.load(logoname)
-    img = img.convert_alpha()
-    imgheight = 110
-    img = pygame.transform.scale(img, (int(ceil(1089.0/278.0*imgheight)),
-                                       imgheight))
-    SCREEN.blit(img, (460, 70))  # see where to put
+    # partykulaer logo within text body
+    SCREEN.blit(LOGO, (460, 70))  # see where to put
     # splash logo, party/event name
-    logoname = os.path.join(PATH, 'logo_splash.png')
-    img = pygame.image.load(logoname)
-    img = img.convert_alpha()
-    imgheight = 200
-    (w, h) = img.get_size()
-    img = pygame.transform.scale(img, (int(ceil(w*imgheight/h)),
-                                       imgheight))
-    (w, h) = img.get_size()
-    SCREEN.blit(img, (960-w/2, 375-h/2))  # see where to put
+    SCREEN.blit(SPLASH, (960-_W/2, 375-_H/2))  # see where to put
     put_text([u'Mich hat schon so lange niemand mehr gedrückt =('],
              1440, 1050, 40)
     if HIDDEN.isfinished():
@@ -553,6 +555,7 @@ def slide_photo1():
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic1')
+        picture_to_globals(1, 'pic1')
         make_dummy_screen([''], [''], [''])
     if is_picture_available('pic1'):
         switch_state(STATE_PHOTO2)
@@ -562,13 +565,14 @@ def slide_photo2():
     if isnewstate():
         init_wait(3)
     make_dummy_screen([''], ['Abbrechen'], [''])
-    show_picture('pic1')
+    show_picture(1)
     put_text(['Foto 1'], 960, 90, 100)
     pygame.display.flip()
     make_print_pic('pic1.jpg', 'crop1.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic2')
+        picture_to_globals(2, 'pic2')
         make_dummy_screen([''], [''], [''])
     if is_picture_available('pic2'):
         switch_state(STATE_PHOTO3)
@@ -578,13 +582,14 @@ def slide_photo3():
     if isnewstate():
         init_wait(3)
     make_dummy_screen([''], ['Abbrechen'], [''])
-    show_picture('pic2')
+    show_picture(2)
     put_text(['Foto 2'], 960, 90, 100)
     pygame.display.flip()
     make_print_pic('pic2.jpg', 'crop2.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic3')
+        picture_to_globals(3, 'pic3')
         make_dummy_screen([''], [''], [''])
     if is_picture_available('pic3'):
         switch_state(STATE_PHOTO4)
@@ -594,13 +599,14 @@ def slide_photo4():
     if isnewstate():
         init_wait(3)
     make_dummy_screen([''], ['Abbrechen'], [''])
-    show_picture('pic3')
+    show_picture(3)
     put_text(['Foto 3'], 960, 90, 100)
     pygame.display.flip()
     make_print_pic('pic3.jpg', 'crop3.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic4')
+        picture_to_globals(4, 'pic4')
         make_dummy_screen([''], [''], [''])
     if is_picture_available('pic4'):
         switch_state(STATE_PHOTO5)
@@ -612,11 +618,12 @@ def slide_photo5():
     if WAIT.isfinished():
         switch_state(STATE_FINISH)
     make_dummy_screen([''], ['Abbrechen'], [''])
-    show_picture('pic4')
+    show_picture(4)
     put_text(['Foto 4'], 960, 90, 100)
     pygame.display.flip()
     make_print_pic('pic4.jpg', 'crop4.jpg')
     assemble_pictures()
+    picture_to_globals(0, 'assembly')
     switch_state(STATE_FINISH)
 
 
@@ -628,7 +635,7 @@ def slide_finish():
     make_dummy_screen([u'Behalten und Exemplar', u'für euch drucken?'],
                       ['Oh Gott, nein,', u'Bitte löscht das!'],
                       [''])
-    show_picture('assembly')
+    show_picture(0)
     put_text(['FERTIG!'], 960, 90, 100)
     put_timeout()
 
@@ -637,7 +644,7 @@ def slide_print_wait():
     make_dummy_screen([u''],
                       [''],
                       [''])
-    show_picture('assembly')
+    show_picture(0)
     put_text([u'Wenn Druck abgeschlosen: bitte NACH SCHRÄG UNTEN abreißen'],
              960, 90, 60)
     if isnewstate():
@@ -670,7 +677,7 @@ def slide_print_finish():
     make_dummy_screen([u'Zweites Exemplar nochmal', u'für uns drucken'],
                       [''],
                       [''])
-    show_picture('assembly')
+    show_picture(0)
     put_text(S_WHERE_TO_PUT,
              960, 90, 60)
     put_timeout()
@@ -698,7 +705,7 @@ def slide_print_wait_2():
     make_dummy_screen([u''],
                       [''],
                       [''])
-    show_picture('assembly')
+    show_picture(0)
     put_text(S_WHERE_TO_PUT,
              960, 90, 60)
     if isnewstate():
