@@ -51,27 +51,6 @@ DISCARDPATH = '/home/pi/discard'
 S_WELCOMESCREEN = u'PARTYKULÄR PHOTO BOOTH'
 S_MAIL = u'insert.a@mail.adress'
 
-# Dynamic Image Objects
-SLIDESHOW = [None]*3
-PHOTOS = [None]*5  # Element 0: Assembly, Element 1-4: Photo 1-4
-
-# Static Image Objects
-BACKGROUND = pygame.image.load(os.path.join(PATH, 'background.jpg')).convert()
-
-LOGO = pygame.image.load(
-    os.path.join(PATH, 'logo_partykulaer.png')).convert_alpha()
-_IMGHEIGHT = 110
-LOGO = pygame.transform.scale(LOGO, (int(ceil(1089.0/278.0*_IMGHEIGHT)),
-                                     _IMGHEIGHT))
-
-SPLASH = pygame.image.load(
-    os.path.join(PATH, 'logo_splash.png')).convert_alpha()
-_IMGHEIGHT = 200
-(_W, _H) = SPLASH.get_size()
-SPLASH = pygame.transform.scale(SPLASH, (int(ceil(_W*_IMGHEIGHT/_H)),
-                                         _IMGHEIGHT))
-
-
 # Define States globally
 STATE_IDLE = 0
 STATE_START = 1
@@ -251,6 +230,26 @@ SCREEN = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 CLOCK = pygame.time.Clock()
 pygame.font.init()
 pygame.mouse.set_visible(False)
+
+# Dynamic Image Objects
+SLIDESHOW = [None]*3
+PHOTOS = [None]*5  # Element 0: Assembly, Element 1-4: Photo 1-4
+
+# Static Image Objects
+BACKGROUND = pygame.image.load(os.path.join(PATH, 'background.jpg')).convert()
+
+LOGO = pygame.image.load(
+    os.path.join(PATH, 'logo_partykulaer.png')).convert_alpha()
+_IMGHEIGHT = 110
+LOGO = pygame.transform.scale(LOGO, (int(ceil(1089.0/278.0*_IMGHEIGHT)),
+                                     _IMGHEIGHT))
+
+SPLASH = pygame.image.load(
+    os.path.join(PATH, 'logo_splash.png')).convert_alpha()
+_IMGHEIGHT = 200
+(_W, _H) = SPLASH.get_size()
+SPLASH = pygame.transform.scale(SPLASH, (int(ceil(_W*_IMGHEIGHT/_H)),
+                                         _IMGHEIGHT))
 
 CAM = PiCamera()
 CAM.resolution = (1920, 1080)
@@ -508,7 +507,8 @@ def slide_idle():
     # partykulaer logo within text body
     SCREEN.blit(LOGO, (460, 70))  # see where to put
     # splash logo, party/event name
-    SCREEN.blit(SPLASH, (960-_W/2, 375-_H/2))  # see where to put
+    (w, h) = SPLASH.get_size()
+    SCREEN.blit(SPLASH, (960-w/2, 385-h/2))  # see where to put
     put_text([u'Mich hat schon so lange niemand mehr gedrückt =('],
              1440, 1050, 40)
     if HIDDEN.isfinished():
