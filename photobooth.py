@@ -263,7 +263,7 @@ def take_picture(name):
         time.sleep(0.1)
     CAM.annotate_text = ''
     imgname = os.path.join(PICPATH, DIRNAME, name + '.jpg')
-    CAM.capture(imgname, quality=10)
+    CAM.capture(imgname, quality=30)
     flip_image(imgname)
     CAM.stop_preview()
 
@@ -334,18 +334,14 @@ def assemble_pictures():
     output_image.save(output_filename, "JPEG")
 
 
-def crop_pics():
-    innames = ['pic1.jpg', 'pic2.jpg', 'pic3.jpg', 'pic4.jpg']
-    outnames = ['crop1.jpg', 'crop2.jpg', 'crop3.jpg', 'crop4.jpg']
-    for inname, outname in zip(innames, outnames):
-        img = Image.open(os.path.join(PICPATH, DIRNAME, inname))
-        img = img.crop((240, 0, 1680, 1080))
-        enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.2)
-        enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(1.2)
-        img = img.resize((384, 288), Image.ANTIALIAS)
-        img.save(os.path.join(PICPATH, DIRNAME, outname), "JPEG")
+def make_print_pic(inname, outname):
+    img = Image.open(os.path.join(PICPATH, DIRNAME, inname))
+    enhancer = ImageEnhance.Contrast(img)
+    img = enhancer.enhance(1.2)
+    enhancer = ImageEnhance.Sharpness(img)
+    img = enhancer.enhance(1.2)
+    img = img.resize((384, int(1080*384/1920)), Image.ANTIALIAS)
+    img.save(os.path.join(PICPATH, DIRNAME, outname), "JPEG")
 
 
 def zip_pics(destiny=KEEPPATH):
@@ -568,6 +564,8 @@ def slide_photo2():
     make_dummy_screen([''], ['Abbrechen'], [''])
     show_picture('pic1')
     put_text(['Foto 1'], 960, 90, 100)
+    pygame.display.flip()
+    make_print_pic('pic1.jpg', 'crop1.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic2')
@@ -582,6 +580,8 @@ def slide_photo3():
     make_dummy_screen([''], ['Abbrechen'], [''])
     show_picture('pic2')
     put_text(['Foto 2'], 960, 90, 100)
+    pygame.display.flip()
+    make_print_pic('pic2.jpg', 'crop2.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic3')
@@ -596,6 +596,8 @@ def slide_photo4():
     make_dummy_screen([''], ['Abbrechen'], [''])
     show_picture('pic3')
     put_text(['Foto 3'], 960, 90, 100)
+    pygame.display.flip()
+    make_print_pic('pic3.jpg', 'crop3.jpg')
     if WAIT.isfinished():
         init_wait(60)
         take_picture('pic4')
@@ -613,8 +615,8 @@ def slide_photo5():
     show_picture('pic4')
     put_text(['Foto 4'], 960, 90, 100)
     pygame.display.flip()
+    make_print_pic('pic4.jpg', 'crop4.jpg')
     assemble_pictures()
-    crop_pics()
     switch_state(STATE_FINISH)
 
 
