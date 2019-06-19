@@ -41,6 +41,8 @@ Setting it up
 - Connect 3 buttons to the correct GPIO pins and voltage supply GPIO pin. See
   ./photobooth.py for the correct pin numbers.
 - make sure all libraries which are imported are installed and working
+- Create a ./mailadress file in your HOME directory. Write your mailaddress in
+  a single line (see ./dummymailaddress file as example)
 
 
 Todos

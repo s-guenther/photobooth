@@ -48,8 +48,8 @@ SLIDEPATH = os.path.join(PATH, 'slideshow')
 KEEPPATH = os.path.join(PATH, 'allpics')
 DISCARDPATH = '/home/pi/discard'
 
-S_WELCOMESCREEN = u'PARTYKULÄR PHOTO BOOTH'
-S_MAIL = u'insert.a@mail.adress'
+with open('mailaddress', 'r') as ff:
+    S_MAIL = ff.read().rstrip('\n')
 
 # Define States globally
 STATE_IDLE = 0
